@@ -1,6 +1,7 @@
 export default class frame {
   constructor(params) {
-    this.name = params.name;
+    this.vdom = params.vdom;
+    this.domCurrent = "";
   }
 
   static replaceAll(str, find, replace) {
@@ -17,7 +18,14 @@ export default class frame {
     });
   }
 
-  static renderVdom(v, selected) {
+  static render(v,selected){
+    let virtualdom = new frame({vdom:v});
+    virtualdom.domNew = virtualdom.renderVdom(v,selected);
+    virtualdom.domCurrent = virtualdom.domNew
+    console.log(virtualdom)
+  }
+
+  renderVdom(v, selected) {
     // get element to append doc to, append vdom elt
     let elt = document.createElement(v.type);
     selected.appendChild(elt);
@@ -35,13 +43,15 @@ export default class frame {
         frame.setProps(v,prop,v.props[prop])
       });
     }
+    // if text, render text, else, rerun renderVdom
     v.children.forEach(child => {
       if (typeof child === "string") {
         let text = document.createTextNode(child);
         elt.appendChild(text);
       } else {
-        frame.renderVdom(child, elt);
+        this.renderVdom(child, elt);
       }
     });
+    return selected
   }
 }

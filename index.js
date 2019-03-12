@@ -15,5 +15,4 @@ const vdom = {
     ] 
 }
 
-frame.renderVdom(vdom, root)
-console.log(root.innerHTML)
+frame.render(vdom, root)
