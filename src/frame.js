@@ -7,7 +7,9 @@ export default class frame {
     const vdomGuidFunc = () => vdomGuid;
     this.vdomGuid = vdomGuidFunc;
     // func that returns vdom + props
-    this.vdomProps = frame.runProps(this.vdomGuid(), this.vdomGuid().props);
+    const vdomPropsConst = frame.runProps(this.vdomGuid(), this.vdomGuid().props);
+    const vdomProps = () => vdomPropsConst
+    this.vdomProps = vdomProps
     this.domCurrent = "";
   }
 
