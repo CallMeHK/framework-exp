@@ -1,7 +1,13 @@
 export default class frame {
   constructor(params) {
-    this.vdom = frame.setGuid(params.vdom);
-    this.vdomStatic = params.vdom
+    // func that returns vdom
+    this.vdomFunc = params.vdom;
+    // func that returns vdom + guid tags
+    const vdomGuid = frame.setGuid(params.vdom());
+    const vdomGuidFunc = () => vdomGuid;
+    this.vdomGuid = vdomGuidFunc;
+    // func that returns vdom + props
+    this.vdomProps = frame.runProps(this.vdomGuid(), this.vdomGuid().props);
     this.domCurrent = "";
   }
 
@@ -17,9 +23,30 @@ export default class frame {
     return str.replace(new RegExp(find, "g"), replace);
   }
 
+  static runProps(v,props) {
+    v.children.forEach((child, i) => {
+      
+      if (child.type === "text") {
+        console.log(props)
+        Object.keys(props).forEach(propkey => {
+          v.children[i].text = frame.replaceAll(
+            child.text,
+            `{{${propkey}}}`,
+            props[propkey]
+          );
+          // console.log( v.children[i].text )
+        });
+      } else {
+        v.children[i] = frame.runProps(child,props);
+      }
+    });
+    //console.log(v);
+    return v;
+  }
+
   static setProps(v, propkey, propval) {
     v.children.forEach((child, i) => {
-        //console.log(child,propkey)
+      //console.log(child,propkey)
       if (child.type === "text") {
         v.children[i].text = frame.replaceAll(
           child.text,
@@ -27,9 +54,10 @@ export default class frame {
           propval
         );
       } else {
-        frame.setProps(child, propkey, propval);
+        v.children[i] = frame.setProps(child, propkey, propval);
       }
     });
+    return v;
   }
 
   static render(v, selected) {
@@ -42,20 +70,25 @@ export default class frame {
 
   rerender(v) {
     // if there are props, apply them to children
-    console.log(v)
+    console.log(v);
     if (v.props !== {}) {
       // for each prop
       Object.keys(v.props).forEach(prop => {
         // for each child
-        console.log(prop)
+        console.log(prop);
         frame.setProps(v, prop, v.props[prop]);
       });
     }
-    console.log(v)
+    console.log(v);
   }
 
   renderVdom(vdom, selected) {
-      let v = vdom
+    let v;
+    if (typeof vdom === "function") {
+      v = vdom();
+    } else {
+      v = vdom;
+    }
     // get element to append doc to, append vdom elt
     let elt = document.createElement(v.type);
     elt.dataset.fId = v.fId;
@@ -97,11 +130,9 @@ export default class frame {
     return gvdom;
   }
 
-  static setGuid(vdomelt){
+  static setGuid(vdomelt) {
     vdomelt.fId = frame.newGuid();
-      let setChildren = frame.runGuid(vdomelt);
-      return {...vdomelt, children:setChildren}
+    let setChildren = frame.runGuid(vdomelt);
+    return { ...vdomelt, children: setChildren };
   }
 }
-
-
