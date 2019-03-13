@@ -1,7 +1,7 @@
 export default class frame {
   constructor(params) {
     this.vdom = frame.setGuid(params.vdom);
-
+    this.vdomStatic = params.vdom
     this.domCurrent = "";
   }
 
@@ -19,6 +19,7 @@ export default class frame {
 
   static setProps(v, propkey, propval) {
     v.children.forEach((child, i) => {
+        //console.log(child,propkey)
       if (child.type === "text") {
         v.children[i].text = frame.replaceAll(
           child.text,
@@ -36,9 +37,25 @@ export default class frame {
     virtualdom.domNew = virtualdom.renderVdom(v, selected);
     virtualdom.domCurrent = virtualdom.domNew;
     console.log(virtualdom);
+    return virtualdom;
   }
 
-  renderVdom(v, selected) {
+  rerender(v) {
+    // if there are props, apply them to children
+    console.log(v)
+    if (v.props !== {}) {
+      // for each prop
+      Object.keys(v.props).forEach(prop => {
+        // for each child
+        console.log(prop)
+        frame.setProps(v, prop, v.props[prop]);
+      });
+    }
+    console.log(v)
+  }
+
+  renderVdom(vdom, selected) {
+      let v = vdom
     // get element to append doc to, append vdom elt
     let elt = document.createElement(v.type);
     elt.dataset.fId = v.fId;
@@ -69,10 +86,7 @@ export default class frame {
     return selected;
   }
 
-  static setGuid(vdomelt) {
-    if (!vdomelt.fId) {
-      vdomelt.fId = frame.newGuid();
-    }
+  static runGuid(vdomelt) {
     let gvdom = vdomelt.children.map(child => {
       if (child.type !== "text" && !child.fId) {
         child.fId = frame.newGuid();
@@ -82,4 +96,12 @@ export default class frame {
     });
     return gvdom;
   }
+
+  static setGuid(vdomelt){
+    vdomelt.fId = frame.newGuid();
+      let setChildren = frame.runGuid(vdomelt);
+      return {...vdomelt, children:setChildren}
+  }
 }
+
+

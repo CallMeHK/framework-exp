@@ -2,7 +2,7 @@ import frame from './src/frame.js';
 
 const root = document.querySelector('#root')
 
-const vdom = {
+const vdom = () => { return {
     type:'div', attrs:{class:'hello'},props:{count:1, word:'bird'},children:[
         {type:'h3', attrs:{},props:{},children:[{type:'text', text:'hello world'}]},
         {type:'div', attrs:{},props:{},children:[
@@ -13,6 +13,17 @@ const vdom = {
             ]}
         ]}
     ] 
-}
+}}
+const vdomSave = vdom()
+console.log(vdom().children[1].children[1].children[0])
+let vdomobj = frame.render(vdom(), root)
+console.log(vdomSave.children[1].children[1].children[0])
 
-frame.render(vdom, root)
+root.addEventListener("click", e => {
+    if(e.target.id==="add"){
+    console.log('add 1')
+    let newVdom = vdom()
+    //console.log('pre rerender: ',newVdom)
+    vdomobj.rerender(newVdom)
+    }
+});
